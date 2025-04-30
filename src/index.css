@@ -1,0 +1,12 @@
+@import "tailwindcss";
+
+@font-face {
+  font-family: "Monda";
+  src: url("../src/assets/font/Monda-Regular.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+}
+
+@theme{
+    --font-monda: "Monda", "sans-serif";
+}
