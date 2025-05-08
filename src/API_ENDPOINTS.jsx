@@ -12,7 +12,7 @@ export const API_ENDPOINTS = {
   USER_VERIFICATION_UPDATE: `${BASE_URL}/api/v1/employee/user-verification-update`,
   CAR_VERIFICATION_UPDATE: `${BASE_URL}/api/v1/employee/car-verification-update`,
 
-
+  CAR_DETAILS: `${BASE_URL}/api/v1/car-details`,
   ADMIN: `${BASE_URL}/api/v1/admin`,
   
 };

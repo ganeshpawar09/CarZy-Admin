@@ -41,7 +41,7 @@ export default function EmployeeDashboard() {
       // Fetch user verifications
       const userResponse = await fetch(API_ENDPOINTS.LIST_USER_VERIFICATION, {
         headers: {
-          // Add necessary headers here
+         
         }
       });
       
@@ -50,6 +50,7 @@ export default function EmployeeDashboard() {
       }
       
       const userData = await userResponse.json();
+      console.log(userData);
       setUserVerifications(userData);
       
       // Fetch car verifications
@@ -90,9 +91,13 @@ export default function EmployeeDashboard() {
   };
 
   const handleViewCarVerification = (verification) => {
-    setCurrentVerification(verification);
-    setRejectionReason("");
-    setShowModal(true);
+    // Navigate to car details page with verification ID
+    navigate(`/car-verification/${verification.car_id}`, {
+      state: { 
+        verificationId: verification.id,
+        isVerification: true 
+      }
+    });
   };
 
   const closeModal = () => {
@@ -178,82 +183,6 @@ export default function EmployeeDashboard() {
     }
   };
 
-  const handleApproveCarVerification = async () => {
-    if (processingAction) return;
-    setProcessingAction(true);
-    
-    try {
-      const response = await fetch(API_ENDPOINTS.CAR_VERIFICATION_UPDATE, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          // Add any other headers as needed
-        },
-        body: JSON.stringify({
-          verification_id: currentVerification.id,
-          verified_by: user.id,
-          status: 'approved'
-        })
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to approve car verification');
-      }
-
-      // Remove the approved verification from the list
-      setCarVerifications(carVerifications.filter(v => v.id !== currentVerification.id));
-      closeModal();
-      // Show success notification
-      alert('Car verification approved successfully');
-    } catch (err) {
-      console.error('Error approving car verification:', err);
-      alert('Failed to approve verification: ' + err.message);
-    } finally {
-      setProcessingAction(false);
-    }
-  };
-
-  const handleRejectCarVerification = async () => {
-    if (!rejectionReason.trim()) {
-      alert('Please provide a reason for rejection');
-      return;
-    }
-    
-    if (processingAction) return;
-    setProcessingAction(true);
-    
-    try {
-      const response = await fetch(API_ENDPOINTS.CAR_VERIFICATION_UPDATE, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          // Add any other headers as needed
-        },
-        body: JSON.stringify({
-          verification_id: currentVerification.id,
-          verified_by: user.id,
-          status: 'rejected',
-          rejection_reason: rejectionReason
-        })
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to reject car verification');
-      }
-
-      // Remove the rejected verification from the list
-      setCarVerifications(carVerifications.filter(v => v.id !== currentVerification.id));
-      closeModal();
-      // Show success notification
-      alert('Car verification rejected successfully');
-    } catch (err) {
-      console.error('Error rejecting car verification:', err);
-      alert('Failed to reject verification: ' + err.message);
-    } finally {
-      setProcessingAction(false);
-    }
-  };
-
   const renderUserVerificationDetails = () => {
     if (!currentVerification) return null;
     
@@ -316,99 +245,6 @@ export default function EmployeeDashboard() {
             
             <button
               onClick={handleRejectUserVerification}
-              disabled={processingAction || !rejectionReason.trim()}
-              className="bg-red-500 hover:bg-red-600 text-white font-medium py-2 px-4 rounded-md disabled:opacity-50"
-            >
-              {processingAction ? 'Processing...' : 'Reject Verification'}
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  };
-
-  const renderCarVerificationDetails = () => {
-    if (!currentVerification) return null;
-    
-    return (
-      <div className="p-4">
-        <h3 className="text-lg font-medium mb-4">Car Verification Details</h3>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div>
-            <p className="text-sm font-medium text-gray-500 mb-1">
-              RC Document (Expires: {formatDate(currentVerification.rc_expiry_date)})
-            </p>
-            <div className="border rounded-lg overflow-hidden h-48 bg-gray-100">
-              <img
-                src={currentVerification.rc_image_url}
-                alt="RC Document"
-                className="w-full h-full object-contain"
-                onError={(e) => {
-                  e.target.onerror = null;
-                  e.target.src = '/api/placeholder/400/320';
-                }}
-              />
-            </div>
-          </div>
-          <div>
-            <p className="text-sm font-medium text-gray-500 mb-1">
-              PUC Certificate (Expires: {formatDate(currentVerification.puc_expiry_date)})
-            </p>
-            <div className="border rounded-lg overflow-hidden h-48 bg-gray-100">
-              <img
-                src={currentVerification.puc_image_url}
-                alt="PUC Certificate"
-                className="w-full h-full object-contain"
-                onError={(e) => {
-                  e.target.onerror = null;
-                  e.target.src = '/api/placeholder/400/320';
-                }}
-              />
-            </div>
-          </div>
-          <div>
-            <p className="text-sm font-medium text-gray-500 mb-1">
-              Insurance Document (Expires: {formatDate(currentVerification.insurance_expiry_date)})
-            </p>
-            <div className="border rounded-lg overflow-hidden h-48 bg-gray-100">
-              <img
-                src={currentVerification.insurance_image_url}
-                alt="Insurance Document"
-                className="w-full h-full object-contain"
-                onError={(e) => {
-                  e.target.onerror = null;
-                  e.target.src = '/api/placeholder/400/320';
-                }}
-              />
-            </div>
-          </div>
-        </div>
-        
-        <div className="mt-6">
-          <div className="flex flex-col space-y-3">
-            <button
-              onClick={handleApproveCarVerification}
-              disabled={processingAction}
-              className="bg-green-500 hover:bg-green-600 text-white font-medium py-2 px-4 rounded-md disabled:opacity-50"
-            >
-              {processingAction ? 'Processing...' : 'Approve Verification'}
-            </button>
-            
-            <div className="mt-2">
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Rejection Reason (required for rejection)
-              </label>
-              <textarea
-                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-                rows="3"
-                value={rejectionReason}
-                onChange={(e) => setRejectionReason(e.target.value)}
-                placeholder="Enter reason for rejection"
-              ></textarea>
-            </div>
-            
-            <button
-              onClick={handleRejectCarVerification}
               disabled={processingAction || !rejectionReason.trim()}
               className="bg-red-500 hover:bg-red-600 text-white font-medium py-2 px-4 rounded-md disabled:opacity-50"
             >
@@ -587,7 +423,7 @@ export default function EmployeeDashboard() {
         )}
       </div>
 
-      {/* Modal for verification details */}
+      {/* Modal for user verification details */}
       {showModal && (
         <div className="fixed inset-0 z-50 overflow-y-auto" style={{ backgroundColor: 'rgba(0, 0, 0, 0.5)' }}>
           <div className="flex items-center justify-center min-h-screen p-4">
@@ -609,7 +445,7 @@ export default function EmployeeDashboard() {
               </div>
               
               <div className="max-h-[80vh] overflow-y-auto">
-                {activeTab === 'users' ? renderUserVerificationDetails() : renderCarVerificationDetails()}
+                {renderUserVerificationDetails()}
               </div>
             </div>
           </div>
